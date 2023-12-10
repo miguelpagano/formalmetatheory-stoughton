@@ -10,39 +10,40 @@ open import Data.Bool hiding (_∨_;_≟_)
 open import Data.List hiding (any)
 open import Data.List hiding (any)
 open import Data.List.Properties
-open import Data.List.Any as Any hiding (map)
-open import Data.List.Any.Properties
-open import Data.List.Any.Membership
+open import Data.List.Relation.Unary.Any as Any hiding (map)
+open import Data.List.Relation.Unary.Any.Properties
+open import Data.List.Membership.Propositional
+open import Data.List.Membership.Propositional.Properties
+open import Data.List.Relation.Binary.Subset.Propositional
+open import Algebra.Structures
+open import Relation.Binary
 open import Relation.Nullary
 open import Relation.Nullary.Decidable
 open import Relation.Binary
 open import Relation.Binary.PropositionalEquality as PropEq renaming ([_] to [_]ᵢ) 
 
-open Any.Membership-≡ renaming (_∈_ to _∈'_;_∉_ to _∉'_) 
 import Function.Equality as FE
 open import Function.Inverse hiding (sym;_∘_;map;id)
-open Inverse
-
 -- Auxiliary Lemmas about lists membership
-c∈xs++ys→c∈xs∨c∈ys : {x : ℕ}{xs ys : List ℕ} → x ∈' xs ++ ys → (x ∈' xs) ∨ (x ∈' ys) 
-c∈xs++ys→c∈xs∨c∈ys {x} {xs} {ys} = FE.Π._⟨$⟩_ (from (++↔ {A = ℕ} {P = _≡_ x} {xs = xs} {ys = ys})) 
-c∈xs∨c∈ys→c∈xs++ys : {x : ℕ}{xs ys : List ℕ} → x ∈' xs ∨ x ∈' ys → x ∈' xs ++ ys 
-c∈xs∨c∈ys→c∈xs++ys {x} {xs} {ys} = FE.Π._⟨$⟩_ (to (++↔ {A = ℕ} {P = _≡_ x} {xs = xs} {ys = ys})) 
-c∉xs++ys→c∉xs : {c : ℕ}{xs ys : List ℕ} → c ∉' xs ++ ys → c ∉' xs 
+c∈xs++ys→c∈xs∨c∈ys : {x : ℕ}{xs ys : List ℕ} → x ∈ xs ++ ys → (x ∈ xs) ∨ (x ∈ ys) 
+c∈xs++ys→c∈xs∨c∈ys {x} {xs} {ys} = FE.Π._⟨$⟩_ (Inverse.from (++↔ {A = ℕ} {P = _≡_ x} {xs = xs} {ys = ys})) 
+c∈xs∨c∈ys→c∈xs++ys : {x : ℕ}{xs ys : List ℕ} → x ∈ xs ∨ x ∈ ys → x ∈ xs ++ ys 
+c∈xs∨c∈ys→c∈xs++ys {x} {xs} {ys} = FE.Π._⟨$⟩_ (Inverse.to (++↔ {A = ℕ} {P = _≡_ x} {xs = xs} {ys = ys})) 
+c∉xs++ys→c∉xs : {c : ℕ}{xs ys : List ℕ} → c ∉ xs ++ ys → c ∉ xs 
 c∉xs++ys→c∉xs {c} {xs} {ys} c∉xs++ys c∈xs = c∉xs++ys (c∈xs∨c∈ys→c∈xs++ys (inj₁ c∈xs))
-c∉xs++ys→c∉ys : {c : ℕ}{xs ys : List ℕ} → c ∉' xs ++ ys → c ∉' ys 
+c∉xs++ys→c∉ys : {c : ℕ}{xs ys : List ℕ} → c ∉ xs ++ ys → c ∉ ys 
 c∉xs++ys→c∉ys {c} {xs} {ys} c∉xs++ys c∈ys = c∉xs++ys (c∈xs∨c∈ys→c∈xs++ys {c} {xs} {ys} (inj₂ c∈ys))
-d∉abc∷xs→d≢a : {a b c d : ℕ}{xs : List ℕ} → d ∉' (a ∷ b ∷ c ∷ xs) → d ≢ a
+d∉abc∷xs→d≢a : {a b c d : ℕ}{xs : List ℕ} → d ∉ (a ∷ b ∷ c ∷ xs) → d ≢ a
 d∉abc∷xs→d≢a {a} {b} {c} {.a} {xs} d∉abc∷xs refl = ⊥-elim (d∉abc∷xs (here refl))
-d∉abc∷xs→d≢b : {a b c d : ℕ}{xs : List ℕ} → d ∉' (a ∷ b ∷ c ∷ xs) → d ≢ b
+d∉abc∷xs→d≢b : {a b c d : ℕ}{xs : List ℕ} → d ∉ (a ∷ b ∷ c ∷ xs) → d ≢ b
 d∉abc∷xs→d≢b {a} {b} {c} {.b} {xs} d∉abc∷xs refl = ⊥-elim (d∉abc∷xs (there (here refl)))
-d∉abc∷xs→d≢c : {a b c d : ℕ}{xs : List ℕ} → d ∉' (a ∷ b ∷ c ∷ xs) → d ≢ c
+d∉abc∷xs→d≢c : {a b c d : ℕ}{xs : List ℕ} → d ∉ (a ∷ b ∷ c ∷ xs) → d ≢ c
 d∉abc∷xs→d≢c {a} {b} {c} {.c} {xs} d∉abc∷xs refl = ⊥-elim (d∉abc∷xs (there (there (here refl))))
-d∉abc∷xs→d∉xs : {a b c d : ℕ}{xs : List ℕ} → d ∉' (a ∷ b ∷ c ∷ xs) → d ∉' xs
+d∉abc∷xs→d∉xs : {a b c d : ℕ}{xs : List ℕ} → d ∉ (a ∷ b ∷ c ∷ xs) → d ∉ xs
 d∉abc∷xs→d∉xs {a} {b} {c} {d} {xs} d∉abc∷xs d∈xs = ⊥-elim (d∉abc∷xs (there (there (there d∈xs))))
-b∉a∷xs→b≢a : {a b : ℕ}{xs : List ℕ} → b ∉' (a ∷ xs) → b ≢ a
+b∉a∷xs→b≢a : {a b : ℕ}{xs : List ℕ} → b ∉ (a ∷ xs) → b ≢ a
 b∉a∷xs→b≢a {a} {.a} {xs} a∉a∷xs refl = ⊥-elim (a∉a∷xs (here refl))
-b∉a∷xs→b∉xs : {a b : ℕ}{xs : List ℕ} → b ∉' (a ∷ xs) → b ∉' xs 
+b∉a∷xs→b∉xs : {a b : ℕ}{xs : List ℕ} → b ∉ (a ∷ xs) → b ∉ xs 
 b∉a∷xs→b∉xs {a} {b} {xs} b∉a∷xs b∈xs = ⊥-elim (b∉a∷xs (there b∈xs))
 --
 lemmaxs++[]≡xs : {A : Set}(xs : List A) → xs ++ [] ≡ xs
@@ -50,14 +51,14 @@ lemmaxs++[]≡xs []        =  refl
 lemmaxs++[]≡xs (x ∷ xs)  =  cong (_∷_ x) (lemmaxs++[]≡xs xs)
 -- Auxiliary functions and properties
 _-_ : List ℕ → ℕ → List ℕ
-xs - x = filter (λ y → not (⌊ x ≟ y ⌋)) xs
+xs - x = filter (λ y →  ( x ≟ y )) xs
 --
 -prop : ∀ {a b} → b ≢ a → not ⌊ b ≟ a ⌋ ≡ true
 -prop {a} {b} b≢a with b ≟ a 
 ... | yes b≡a  = ⊥-elim (b≢a b≡a)
 ... | no _     = refl
 --
-lemmafilter→ : (x : ℕ)(xs : List ℕ)(p : ℕ → Bool) → x ∈' filter p xs → (p x ≡ true × x ∈' xs)
+lemmafilter→ : (x : ℕ)(xs : List ℕ)(p : ℕ → Bool) → x ∈ filter p xs → (p x ≡ true × x ∈ xs)
 lemmafilter→ x []        p ()
 lemmafilter→ x (y ∷ xs)  p x∈filterpy∷xs with p y | inspect p y
 ...  | false   | [ py≡false ]ᵢ = mapₓ id there (lemmafilter→ x xs p x∈filterpy∷xs)
@@ -66,7 +67,7 @@ lemmafilter→ x (.x ∷ xs) p (here refl)
 lemmafilter→ x (y ∷ xs) p (there x∈filterpxs)  
      | true | [ py≡true ]ᵢ = mapₓ id there (lemmafilter→ x xs p x∈filterpxs)
 --
-lemmafilter← : (x : ℕ)(xs : List ℕ)(p : ℕ → Bool) → p x ≡ true →  x ∈' xs → x ∈' filter p xs
+lemmafilter← : (x : ℕ)(xs : List ℕ)(p : ℕ → Bool) → p x ≡ true →  x ∈ xs → x ∈ filter p xs
 lemmafilter← x (.x ∷ xs)  p px≡true (here refl) with p x
 lemmafilter← x (.x ∷ xs)  p px≡true (here refl) | true = here refl
 lemmafilter← x (.x ∷ xs)  p ()      (here refl) | false 
@@ -81,11 +82,11 @@ lemmaΓ⊆Δ→Γ,x⊆Δ,x {x} Γ⊆Δ {y} (there y∈Γ,x)  = there (Γ⊆Δ y�
 lemmaΓ⊆Γ,x : {Γ : List ℕ}{x : ℕ} → Γ ⊆ x ∷ Γ
 lemmaΓ⊆Γ,x {Γ} {x} {y} y∈Γ = there y∈Γ
 --
-lemmax∈Γ⇒Γ,x⊆Γ : {Γ : List ℕ}{x : ℕ} → x ∈' Γ → x ∷ Γ ⊆ Γ
+lemmax∈Γ⇒Γ,x⊆Γ : {Γ : List ℕ}{x : ℕ} → x ∈ Γ → x ∷ Γ ⊆ Γ
 lemmax∈Γ⇒Γ,x⊆Γ x∈Γ (here refl)  = x∈Γ
 lemmax∈Γ⇒Γ,x⊆Γ x∈Γ (there y∈Γ)  = y∈Γ
 --
-lemma∈ : {Γ : List ℕ}{x y : ℕ} → y ∈' x ∷ Γ → x ≢ y → y ∈' Γ
+lemma∈ : {Γ : List ℕ}{x y : ℕ} → y ∈ x ∷ Γ → x ≢ y → y ∈ Γ
 lemma∈ {Γ} {x} .{x}  (here refl) x≢y = ⊥-elim (x≢y refl)
 lemma∈ {Γ} {x} {y}   (there y∈Γ) x≢y = y∈Γ
 --

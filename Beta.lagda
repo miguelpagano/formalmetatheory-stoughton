@@ -9,8 +9,6 @@ open import Alpha
 open import Relation Λ hiding (_++_) renaming (_⊆_ to _⊆R_)
 open import NaturalProp
 
-open import ListProperties
-
 open import Data.Empty
 open import Data.Sum
 open import Data.Nat hiding (_*_)
