@@ -9,6 +9,8 @@ preserved under α- conversion, the principle in question is equivalent to simpl
 structural induction and recursion. The corresponding proofs have been checked
 in the system Agda.
 
+The main file is [InductionPrinciples](InductionPrinciples.lagda).
+
 This formalization is an extension of (an updated version of)
 https://github.com/ernius/formalmetatheory-stoughton . I, Miguel Pagano, updated
 the library in order to make it compatible with Agda 2.6.4 and the standard
