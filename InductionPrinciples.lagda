@@ -10,95 +10,97 @@ open import Term _≟ₐ_ Χ hiding (_×_;∃)
 open import Substitution _≟ₐ_ Χ
 open import Alpha _≟ₐ_ Χ
 open import SubstitutionLemmas _≟ₐ_ Χ
-open import Data.Empty
-open import Data.Nat hiding (_*_)
 open import Relation.Nullary
 open import Relation.Binary hiding (Rel)
 open import Function renaming (_∘_ to _∘f_)
-open import Data.Product renaming (Σ to Σₓ)
+open import Data.Product
 open import Relation.Binary.PropositionalEquality as PropEq
-  using (_≡_; _≢_; refl; sym; cong; cong₂; trans; setoid)
-open PropEq.≡-Reasoning renaming (begin_ to begin≡_;_∎ to _◻)
-open import Data.List hiding (any) renaming (length to length')
+  using (_≡_; _≢_; refl; sym; cong; cong₂; trans)
+open import Data.List
 open import Data.List.Membership.Propositional
-open import Data.List.Relation.Unary.Any hiding (map)
-open import Data.List.Relation.Unary.Any.Properties
-open import Data.List.Membership.Propositional.Properties
-open import Data.List.Properties
 \end{code}
 
+We present the induction principles exactly as in the paper.
 \begin{code}
-StructuralInduction : {l : Level} (P : Λ → Set l) → Set l
-StructuralInduction P =
+StructuralInduction : {l : Level} → (P : Λ → Set l) → Set l
+StructuralInduction {l} P = 
   (∀ a → P (v a))
   → (∀ M N → P M → P N → P (M · N))
   → (∀ M b → P M → P (ƛ b M))
+-----------------------------------
   → ∀ M → P M
 
-structural-induction : {l : Level}(P : Λ → Set l) → StructuralInduction P
-structural-induction P ha h· hƛ (v a)
-  = ha a
-structural-induction P ha h· hƛ (M · N)
-  = h· M N (structural-induction P ha h· hƛ M) (structural-induction P ha h· hƛ N)
-structural-induction P ha h· hƛ (ƛ a M)
-  = hƛ M a (structural-induction P ha h· hƛ M)
+structural-induction : {l : Level} → ∀ P → StructuralInduction {l} P
+structural-induction P h-at h-app h-abs (v a)
+  = h-at a
+structural-induction P h-at h-app h-abs (M · N)
+  = h-app M N (structural-induction P h-at h-app h-abs M) (structural-induction P h-at h-app h-abs N)
+structural-induction P h-at h-app h-abs (ƛ a M)
+  = h-abs M a (structural-induction P h-at h-app h-abs M)
+
+StrongRenamingInduction : {l : Level} (P : Λ → Set l) → Set l
+StrongRenamingInduction P =
+  (∀ a → P (v a))
+  → (∀ M N → P M → P N → P (M · N))
+  → (∀ M b → (∀ r → P (M ∙ᵣ r)) → P (ƛ b M))
+--------------------------------------------
+  → ∀ M → P M
 
 
-module _   (l : Level) (P : Λ → Set l) (P-α-comp : ∀ M N → M ∼α N → P M → P N) where
+AlphaInduction : {l : Level} (P : Λ → Set l) → Set l
+AlphaInduction P =
+  (∀ a → P (v a))
+  → (∀ M N → P M → P N →  P (M · N))
+  → ∃ (λ as → (∀ M b  → b ∉ as
+                    → P M
+                    → P (ƛ b M)))
+------------------------------------
+  → ∀ M → P M
+\end{code}
 
-  StrongRenamingInduction : Set l
-  StrongRenamingInduction =
-    (∀ a → P (v a))
-    → (∀ M N → P M → P N → P (M · N))
-    → (∀ M b → (∀ r → P (M ∙ᵣ r)) → P (ƛ b M))
-    → ∀ M → P M
+\begin{code}
 
-
-  IH-Strong : (∀ a → P (v a)) →
-              (∀ M N → P M → P N → P (M · N)) →
-              (∀ M b → (∀ r → P (M ∙ᵣ r)) → P (ƛ b M)) →
-              ∀ M → (∀ r → P (M ∙ᵣ r))
-  IH-Strong ha h-app h-abs (v x) r = ha (r x)
-  IH-Strong ha h-app h-abs (M · M₁) r = h-app (M ∙ᵣ r) (M₁ ∙ᵣ r) (IH-Strong ha h-app h-abs M r) (IH-Strong ha h-app h-abs M₁ r)
-  IH-Strong ha h-app h-abs (ƛ x M) r = h-abs (M ∙ᵣ r') y ih'
-    where y = Chiᵣ (r , ƛ x M)
-          y∉ = lemmaχ∉ (fv M)
-          r' = r ≺+ (x , y)
-          ih : ∀ r₁ → P (M  ∙ᵣ (r₁ ∘f r'))
-          ih r₁ = IH-Strong ha h-app h-abs M (r₁ ∘f r')
-          ih' : ∀ r₁ → P ((M  ∙ᵣ r') ∙ᵣ r₁)
-          ih' r₁ = P-α-comp (M ∙ᵣ (r₁ ∘f r')) ((M ∙ᵣ r') ∙ᵣ r₁) lemma∙comp-αᵣ (ih r₁)
-            where lemma∙comp-αᵣ : (M ∙ᵣ (r₁ ∘f r')) ∼α ((M ∙ᵣ r') ∙ᵣ r₁)
-                  lemma∙comp-αᵣ rewrite lemma∙compᵣ {M = M} {r'} {r₁} = ∼ρ
-
-  Structural⇒Renaming : StructuralInduction P → StrongRenamingInduction
-  Structural⇒Renaming ih ha h-app h-abs M = P-α-comp (M ∙ᵣ ιᵣ) M (∼σ lemma∙ιᵣ) (IH-Strong ha h-app h-abs M id)
-
-  AlphaInduction =
-    (∀ a → P (v a))
-    → (∀ M N → P M → P N →  P (M · N))
-    → ∃ (λ as → (∀ M b  → b ∉ as
-                      → P M
-                      → P (ƛ b M)))
-    → ∀ M → P M
-
-  Strong⇒αInd : StrongRenamingInduction → AlphaInduction
-  Strong⇒αInd ind ha h-app h-abs = ind ha h-app (key-lemma h-abs)
-    where
-      key-lemma : ∃ (λ as → (∀ M b  → b ∉ as
-                      → P M
-                      → P (ƛ b M))) → (∀ M b → (∀ r → P (M ∙ᵣ r)) → P (ƛ b M))
-      key-lemma (cs , hip) M b f =
-            P-α-comp (ƛ y (M ∙ᵣ (ιᵣ ≺+ (b , y)))) (ƛ b M)
-              goal (hip (M ∙ᵣ (ιᵣ ≺+ (b , y))) y (∉-++⁻ʳ  y∉) (f (ιᵣ ≺+ (b , y))))
+Structural⇒Renaming : ∀ {l} → (∀ P → StructuralInduction {l} P) →
+                      ∀ (P : Λ → Set l) → (P Respects (_∼αᵣ_)) →
+                      StrongRenamingInduction P
+Structural⇒Renaming {l} struct-ind P P-α-comp h-at h-app h-abs M =
+   P-α-comp (α→αᵣ (∼σ lemma∙ιᵣ)) (stronger-ind P P-α-comp h-at h-app h-abs M id)
+     where
+     stronger-ind : ∀ (P : Λ → Set l) → (P-α-comp : P Respects (_∼αᵣ_)) →
+         (∀ a → P (v a)) →
+         (∀ M N → P M → P N → P (M · N)) →
+         (∀ M b → (∀ r → P (M ∙ᵣ r)) → P (ƛ b M)) →
+         ∀ M r → P (M ∙ᵣ r)
+     stronger-ind P P-α-comp h-at h-app h-abs =  struct-ind (λ M → ∀ r → P (M ∙ᵣ r) )
+                                               (λ a r → h-at (r a))
+                                                (λ M N ihM ihN r → h-app (M ∙ᵣ r) (N ∙ᵣ r) (ihM r) (ihN r))
+                                                h-abs'
         where
-        y = χ' (fv (ƛ b M) ++ cs)
-        y∉ = lemmaχ∉ (fv (ƛ b M) ++ cs)
-        Mιby≡Mιᵣby = id-ren M (ι ≺+ (b ∶ v y)) (ιᵣ ≺+ (b ∶ y)) (Σ∼Ren-upd _ _ M (ι∼Renιᵣ M) b y)
-        goal :  ƛ y (M ∙ᵣ (ιᵣ ≺+ (b ∶ y))) ∼α ƛ b M
-        goal rewrite Mιby≡Mιᵣby = ∼σ (corollary4-2' {b} {y} {M} (lemma∉fv→# (∉-++⁻ˡ y∉)))
+        h-abs' : (M : Λ) (x : Atom) → ((r' : Ren) → P (M ∙ᵣ r')) → (r : Ren) → P (ƛ x M ∙ᵣ r)
+        h-abs' M x ihM r = h-abs (M ∙ᵣ r') y ih'
+           where
+           y = Chiᵣ (r , ƛ x M)
+           y∉ = lemmaχ∉ (fv M)
+           r' = r ≺+ (x , y)
+           ih' : ∀ r₁ → P ((M  ∙ᵣ r') ∙ᵣ r₁)
+           ih' r₁ rewrite lemma∙compᵣ {M} {r'} {r₁} = P-α-comp (α→αᵣ ∼ρ) (ihM (r₁ ∘f r'))
+
+Strong⇒AlphaInduction : ∀ {l} → (∀ P → StrongRenamingInduction P) →
+                        (∀ (P : Λ → Set l) → (P Respects (_∼αᵣ_)) → AlphaInduction P)
+Strong⇒AlphaInduction strong-ind P P-α-comp h-at h-app h-abs = strong-ind P h-at h-app (key-lemma h-abs)
+  where
+  key-lemma : ∃ (λ as → (∀ M b  → b ∉ as
+                  → P M
+                  → P (ƛ b M))) → (∀ M b → (∀ r → P (M ∙ᵣ r)) → P (ƛ b M))
+  key-lemma (cs , hip) M b hipM = P-α-comp goal (hip (M ∙ᵣ (ιᵣ ≺+ (b , y))) y (∉-++⁻ʳ  y∉) (hipM (ιᵣ ≺+ (b , y))))
+    where
+    y = χ' (fv (ƛ b M) ++ cs)
+    y∉ = lemmaχ∉ (fv (ƛ b M) ++ cs)
+    Mιby≡Mιᵣby = id-ren {M} (Σ∼Ren-upd {M = M} (ι∼Renιᵣ M) b y)
+    goal :  ƛ y (M ∙ᵣ (ιᵣ ≺+ (b ∶ y))) ∼αᵣ ƛ b M
+    goal rewrite Mιby≡Mιᵣby = α→αᵣ (∼σ (corollary4-2' {b} {y} {M} (lemma∉fv→# (∉-++⁻ˡ y∉))))
 
 
-  TermαIndPerm_last : AlphaInduction → StructuralInduction P
-  TermαIndPerm_last alphaInd ha h· habs = alphaInd ha h· ([] , (λ M b _ PM → habs M b PM))
+AlphaInduction⇒Structural : ∀ {l} → (∀ P → AlphaInduction P) → (∀ P → StructuralInduction {l} P)
+AlphaInduction⇒Structural α-ind P h-at h-app h-abs = α-ind P h-at h-app ([] , (λ M b _ PM → h-abs M b PM))
 \end{code}

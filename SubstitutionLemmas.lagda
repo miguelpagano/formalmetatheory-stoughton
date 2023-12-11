@@ -256,7 +256,7 @@ lemmaMι≡M'ι→M∼M' {M} {M'} = (<′-rec _ lemmaMι≡M'ι→M∼M'-aux) (l
 ∼ρ {M} = lemmaMι≡M'ι→M∼M' refl
 
 id-ren-α : ∀ M σ ρ → Σ∼Ren σ ρ M → M ∙ᵣ ρ ∼α M ∙ σ
-id-ren-α M σ ρ cond rewrite id-ren M σ ρ cond = ∼ρ
+id-ren-α M σ ρ cond rewrite id-ren {M} cond = ∼ρ
 
 \end{code}
 \begin{code}
@@ -333,7 +333,7 @@ lemma∙ιᵣ : {M : Λ} → M ∼α M ∙ᵣ ιᵣ
 lemma∙ιᵣ {M} rewrite id-eq M = lemma∙ι {M}
 
 lemma∙ιᵣ' : {M : Λ} → M ∼αᵣ M ∙ᵣ ιᵣ
-lemma∙ιᵣ' {M} = α→αᵣ M (M ∙ᵣ ιᵣ) (lemma∙ιᵣ {M})
+lemma∙ιᵣ' {M} = α→αᵣ (lemma∙ιᵣ {M})
 
 
 lemma∙compᵣ : {M : Λ} {r r' : Ren} → (M ∙ᵣ r) ∙ᵣ r' ≡ M ∙ᵣ (r' ∘f r)

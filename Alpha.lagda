@@ -42,22 +42,22 @@ data _∼αᵣ_ : Λ → Λ → Set where
       → M ∙ᵣ (ιᵣ ≺+ (x , y)) ∼αᵣ M' ∙ᵣ (ιᵣ ≺+ (x' , y))
       → ƛ x M ∼αᵣ ƛ x' M'
 
-αᵣ→α : ∀ M N → M ∼αᵣ N → M ∼α N
-αᵣ→α .(v _) .(v _) ∼v = ∼v
-αᵣ→α .(_ · _) .(_ · _) (∼· M∼αᵣN M∼αᵣN₁) = ∼· (αᵣ→α _ _ M∼αᵣN) (αᵣ→α _ _ M∼αᵣN₁)
-αᵣ→α (ƛ z M) (ƛ w N) (∼ƛ {y = y} x x₁ M∼αᵣN)
-  rewrite id-ren M _ _ (Σ∼Ren-upd ι ιᵣ M (ι∼Renιᵣ M) z y)
-        | id-ren N _ _ (Σ∼Ren-upd ι ιᵣ N (ι∼Renιᵣ N) w y)
-  = ∼ƛ {y = y} x x₁ (αᵣ→α _ _ M∼αᵣN)
+αᵣ→α : ∀ {M N} → M ∼αᵣ N → M ∼α N
+αᵣ→α  ∼v = ∼v
+αᵣ→α (∼· M∼αᵣN M∼αᵣN₁) = ∼· (αᵣ→α M∼αᵣN) (αᵣ→α M∼αᵣN₁)
+αᵣ→α {ƛ z M} {ƛ w N} (∼ƛ {y = y} x x₁ M∼αᵣN)
+  rewrite id-ren {M} (Σ∼Ren-upd {M = M} (ι∼Renιᵣ M) z y)
+        | id-ren {N} (Σ∼Ren-upd {M = N} (ι∼Renιᵣ N) w y)
+  = ∼ƛ {y = y} x x₁ (αᵣ→α M∼αᵣN)
 
 
-α→αᵣ : ∀ M N → M ∼α N → M ∼αᵣ N
-α→αᵣ .(v _) .(v _) ∼v = ∼v
-α→αᵣ .(_ · _) .(_ · _) (∼· M∼αᵣN M∼αᵣN₁) = ∼· (α→αᵣ _ _ M∼αᵣN) (α→αᵣ _ _ M∼αᵣN₁)
-α→αᵣ (ƛ z M) (ƛ w N) (∼ƛ {y = y} x x₁ M∼αᵣN)
-  rewrite sym (id-ren M _ _ (Σ∼Ren-upd ι ιᵣ M (ι∼Renιᵣ M) z y))
-        | sym (id-ren N _ _ (Σ∼Ren-upd ι ιᵣ N (ι∼Renιᵣ N) w y))
-  = ∼ƛ {y = y} x x₁ (α→αᵣ _ _ M∼αᵣN)
+α→αᵣ : ∀ {M N} → M ∼α N → M ∼αᵣ N
+α→αᵣ ∼v = ∼v
+α→αᵣ (∼· M∼αᵣN M∼αᵣN₁) = ∼· (α→αᵣ M∼αᵣN) (α→αᵣ M∼αᵣN₁)
+α→αᵣ {ƛ z M} {ƛ w N} (∼ƛ {y = y} x x₁ M∼αᵣN)
+  rewrite sym (id-ren {M} (Σ∼Ren-upd {M = M} (ι∼Renιᵣ M) z y))
+        | sym (id-ren {N} (Σ∼Ren-upd {M = N} (ι∼Renιᵣ N) w y))
+  = ∼ƛ {y = y} x x₁ (α→αᵣ M∼αᵣN)
 \end{code}
 
 \begin{code}

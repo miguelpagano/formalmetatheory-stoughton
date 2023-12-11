@@ -8,7 +8,7 @@
 \ignore{
 \begin{code}
 open import Level hiding (zero)
-module Relation {l : Level} (A : Set l) where  
+module Relation {l : Level} (A : Set l) where
 
   open import Relation.Nullary
   import Relation.Binary as RB
@@ -22,7 +22,7 @@ module Relation {l : Level} (A : Set l) where
 \ignore{
 \begin{code}
   Rel : Set (suc l)
-  Rel = RB.Rel A l 
+  Rel = RB.Rel A l
 \end{code}
 
 \begin{code}
@@ -48,14 +48,14 @@ The dual $R^{\mathit{op}}$ of a relation $R$ is defined by swapping the pairs.
 Given two relations $R$ and $S$ over $A$ we can take their union.
 
 \begin{code}
-  infix 5 _∪_   
-  _∪_  : (R S : Rel) → Rel 
+  infix 5 _∪_
+  _∪_  : (R S : Rel) → Rel
   _∪_ R S a b = R a b ⊎ S a b
 \end{code}
 
 Binary relations can be pre-ordered by inclusion, $R$ is less than or
 equal to $S$ when $a\,R\,b$ implies $a\,S\,b$; as usual we write $R
-\subseteq S$. 
+\subseteq S$.
 
 \begin{code}
   _⊆_ : Rel → Rel → Set l
@@ -88,18 +88,18 @@ straightforward to prove the other
   mon-star : {R S : Rel} → R ⊆ S → star R ⊆ star S
   mon-star R⊆S refl = refl
   mon-star R⊆S (just aRb) = just (R⊆S aRb)
-  mon-star R⊆S (trans aR⋆b bR⋆c) 
+  mon-star R⊆S (trans aR⋆b bR⋆c)
     = trans (mon-star R⊆S aR⋆b) (mon-star R⊆S bR⋆c)
-  
+
   idem-star : {R : Rel} → star (star R) ⊆ star R
   idem-star refl = refl
   idem-star (just aRb) = aRb
   idem-star (trans aR⋆b bR⋆c) = trans (idem-star aR⋆b) (idem-star bR⋆c)
 
   trans-⊆-star : {R S : Rel} → R ⊆ star S → star R ⊆ star S
-  trans-⊆-star {R} {S} R⊆S⋆ 
-    = trans-⊆  {star R} {star (star S)} {star S} 
-               (mon-star R⊆S⋆) 
+  trans-⊆-star {R} {S} R⊆S⋆
+    = trans-⊆  {star R} {star (star S)} {star S}
+               (mon-star R⊆S⋆)
                idem-star
 \end{code}
 
@@ -120,12 +120,12 @@ equivalent.
     one   : ∀ {a b}    → ⟿ a b                 → steps ⟿ a b
     more  : ∀ {a b c}  → ⟿ a b → steps ⟿ b c  → steps ⟿ a c
 
-  _++_ :  {⟿ : Rel} {a b c : A} 
+  _++_ :  {⟿ : Rel} {a b c : A}
           → steps ⟿ a b → steps ⟿ b c → steps ⟿ a c
   zero ++ s' = s'
   one a⟿b ++ b⟿*c = more a⟿b b⟿*c
   more a⟿b b⟿*c ++ c⟿*d = more a⟿b (b⟿*c ++ c⟿*d)
-  
+
   ⋆-to-ω : ∀ {a b ⟿} → star ⟿ a b → steps ⟿ a b
   ⋆-to-ω refl = zero
   ⋆-to-ω (just a⟿b) = one a⟿b
@@ -145,7 +145,7 @@ the diamond property.
 \begin{minipage}{0.7\textwidth}
 \begin{code}
   diamond : (_⟿_ : Rel) → Set l
-  diamond _⟿_ =  {a b c : A} 
+  diamond _⟿_ =  {a b c : A}
                   → a ⟿ b → a ⟿ c →
                   ∃ (λ d → b ⟿ d × c ⟿ d)
 \end{code}
@@ -177,7 +177,7 @@ closure.
   cr-steps ⟿ = diamond (steps ⟿)
 
   cr-steps-to-cr : {⟿ : Rel} → cr-steps ⟿ → cr ⟿
-  cr-steps-to-cr cr a⟿*b a⟿*c 
+  cr-steps-to-cr cr a⟿*b a⟿*c
     with cr (⋆-to-ω a⟿*b) (⋆-to-ω a⟿*c)
   ... | d , b⟿*d , c⟿*d = d , ω-to-⋆ b⟿*d , ω-to-⋆ c⟿*d
 \end{code}
@@ -200,7 +200,7 @@ The proof is by induction in the length of $\reduces a c$:
    \draw [double] (a) -- (c) ;
    \draw [double] (b) -- (d) ;
    \draw[->] (c) -> (d) ;
-\end{tikzpicture} 
+\end{tikzpicture}
 \quad
 \begin{tikzpicture}[>=latex,baseline]
    \node (a) at (2,2) {$a$};
@@ -213,7 +213,7 @@ The proof is by induction in the length of $\reduces a c$:
    \draw [->] (a) -- (c) ;
    \draw [->] (b) -- (d) ;
    \draw[->] (c) -> (d) ;
-\end{tikzpicture} 
+\end{tikzpicture}
 \quad
 \begin{tikzpicture}[>=latex,baseline]
    \node (a) at (2,2) {$a$};
@@ -237,18 +237,18 @@ The proof is by induction in the length of $\reduces a c$:
 \end{proof}
 
 \begin{code}
-  leg :  ∀ {a b c ⟿} 
-         → diamond ⟿ 
-         → ⟿ a b 
-         → steps ⟿ a c 
-         → ∃ (λ d → steps ⟿ b d × ⟿ c d) 
-  leg {a} {b} ♢ a⟿b zero    = b , zero , a⟿b 
-  leg {a} {b} {c} ♢ a⟿b (one a⟿c) 
+  leg :  ∀ {a b c ⟿}
+         → diamond ⟿
+         → ⟿ a b
+         → steps ⟿ a c
+         → ∃ (λ d → steps ⟿ b d × ⟿ c d)
+  leg {a} {b} ♢ a⟿b zero    = b , zero , a⟿b
+  leg {a} {b} {c} ♢ a⟿b (one a⟿c)
     with ♢ a⟿b a⟿c
   ... | d , b⟿d , c⟿d      = d , one b⟿d , c⟿d
-  leg ♢ a⟿b (more a⟿c c⟿*dₙ) 
+  leg ♢ a⟿b (more a⟿c c⟿*dₙ)
     with ♢ a⟿b a⟿c
-  ... | d₁ , b⟿d₁ , c⟿d₁ 
+  ... | d₁ , b⟿d₁ , c⟿d₁
     with leg ♢ c⟿d₁ c⟿*dₙ
   ... | dₙ , e⟿*dₙ , d⟿dₙ  = dₙ , more b⟿d₁ e⟿*dₙ , d⟿dₙ
 \end{code}
@@ -273,7 +273,7 @@ The proof is by induction on the second reduction and cases in the first one, us
    \draw [->] (a) -- (c) ;
    \draw[->] (b) -> (d) ;
    \draw[double] (c) -> (d) ;
-\end{tikzpicture} 
+\end{tikzpicture}
 % one reduction
 \begin{tikzpicture}[>=latex,baseline,scale=0.8]
    \node (a) at (2,2) {$a$};
@@ -286,7 +286,7 @@ The proof is by induction on the second reduction and cases in the first one, us
    \draw [->] (a) -- (cn) ;
    \draw[->] (b) -> (dn) ;
    \draw[->] (cn) -> (dn) ;
-\end{tikzpicture} 
+\end{tikzpicture}
 % more steps in both sides
 \begin{tikzpicture}[>=latex,baseline,scale=0.8]
    \node (a) at (2,2) {$a$};
@@ -312,21 +312,21 @@ The proof is by induction on the second reduction and cases in the first one, us
 
 \begin{code}
   diamond-cr-steps : {⟿ : Rel} → diamond ⟿ → cr-steps ⟿
-  diamond-cr-steps ♢ {a} {.a} {c}   zero                  a⟿*c  
+  diamond-cr-steps ♢ {a} {.a} {c}   zero                  a⟿*c
     = c , a⟿*c , zero
-  diamond-cr-steps ♢                (one a⟿b)            a⟿*c 
+  diamond-cr-steps ♢                (one a⟿b)            a⟿*c
     with leg ♢ a⟿b a⟿*c
   ... | d , b⟿*d , c⟿d = d , b⟿*d , one c⟿d
-  diamond-cr-steps ♢ {a} {bₙ} {.a}  (more a⟿b₁ b₁⟿*bₙ)  zero 
+  diamond-cr-steps ♢ {a} {bₙ} {.a}  (more a⟿b₁ b₁⟿*bₙ)  zero
     = bₙ , zero , more a⟿b₁ b₁⟿*bₙ
   diamond-cr-steps ♢                (more a⟿b₁ b₁⟿*bₙ)  (one a⟿c)
     with leg ♢ a⟿c (more a⟿b₁ b₁⟿*bₙ)
   ... | d , c⟿*d , bₙ⟿d = d , one bₙ⟿d , c⟿*d
   diamond-cr-steps ♢                (more a⟿b₁ b₁⟿*bₙ)  (more a⟿c₁ c₁⟿*cₙ)
     with leg ♢ a⟿c₁ (more a⟿b₁ b₁⟿*bₙ)
-  ... | d₁ , c₁⟿*d₁ , bₙ⟿d₁ 
+  ... | d₁ , c₁⟿*d₁ , bₙ⟿d₁
     with diamond-cr-steps ♢ c₁⟿*d₁ c₁⟿*cₙ
-  ... | dₙ , d₁⟿*dₙ , cₙ⟿*dₙ  
+  ... | dₙ , d₁⟿*dₙ , cₙ⟿*dₙ
     = dₙ , more bₙ⟿d₁  d₁⟿*dₙ , cₙ⟿*dₙ
 \end{code}
 
@@ -339,7 +339,7 @@ the diamond property.
   diamond-cr ♢ = cr-steps-to-cr (diamond-cr-steps ♢)
 \end{code}
 
-\begin{lemma} 
+\begin{lemma}
 Let $R$ and $S$ be two relations such that $S\subseteq R$ and $\transclos R\subseteq S$, if
 $R$ is Church-Rosser, then $S$ is also.
 \end{lemma}
@@ -354,10 +354,10 @@ $b\,\transclos S\,d$ and $c\,\transclos S\,d$.
   cr-⊆ : {R S : Rel} → S ⊆ R → R ⊆ star S → cr R → cr S
   cr-⊆ S⊆R R⊆S⋆ cr aR⋆b aR⋆c
     with cr (mon-star S⊆R aR⋆b) (mon-star S⊆R aR⋆c)
-  ... | d , bR⋆d , cR⋆d 
-    =  d                       ,  
-       trans-⊆-star R⊆S⋆ bR⋆d  , 
-       trans-⊆-star R⊆S⋆ cR⋆d 
+  ... | d , bR⋆d , cR⋆d
+    =  d                       ,
+       trans-⊆-star R⊆S⋆ bR⋆d  ,
+       trans-⊆-star R⊆S⋆ cR⋆d
 \end{code}
 %</Relation>
 

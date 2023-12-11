@@ -24,14 +24,10 @@ open import Data.Empty
 open import Data.Nat hiding (_*_)
 open import Data.Product renaming (Σ to Σₓ;map to mapₓ)
 open import Relation.Binary
-open import Relation.Binary.PropositionalEquality as PropEq renaming ([_] to [_]ᵢ)
+open import Relation.Binary.PropositionalEquality as PropEq hiding ([_])
 open import Relation.Nullary
 open import Relation.Nullary.Negation
-open import Relation.Nullary.Decidable hiding (map)
 open import Algebra.Structures
-
--- open ≤-Reasoning
---    renaming (begin_ to start_; _∎ to _◽; _≡⟨_⟩_ to _≤⟨_⟩'_)
 
 infixl 8 _≺+_
 \end{code}
@@ -170,11 +166,6 @@ lemmafvfree← x .(M · N)  (*·r {.x} {M} {N} xfreeN)
   = ∈-++⁺ʳ (fv M) (lemmafvfree← x N xfreeN)
 lemmafvfree← x .(ƛ y M)  (*ƛ {.x} {y} {M} xfreeM y≢x)
   = ∈-filter⁺ (λ z → ¬? (y ≟ₐ z)) ((lemmafvfree← x M xfreeM)) y≢x
-  where
-  px≡true : not ⌊ y ≟ₐ x ⌋ ≡ true
-  px≡true with y ≟ₐ x
-  ... | yes y≡x = ⊥-elim (y≢x y≡x)
-  ... | no  _   = refl
 
 fv-app⁺ˡ : ∀ {M N x} → x ∈ fv M → x ∈ fv (M · N)
 fv-app⁺ˡ x∈M = ∈-++⁺ˡ x∈M
@@ -315,16 +306,16 @@ _∙ᵣ_ : Λ → Ren → Λ
 ι∼Renιᵣ : ∀ M → Σ∼Ren ι ιᵣ M
 ι∼Renιᵣ M = (λ _ _ → refl)
 
-Σ∼Ren-upd : ∀ σ ρ M → Σ∼Ren σ ρ M → ∀ x y → Σ∼Ren (σ ≺+ (x , v y)) (ρ ≺+ (x ∶ y)) M
-Σ∼Ren-upd σ ρ M cond x y z z∈fvM with x ≟ₐ z
+Σ∼Ren-upd : ∀ {σ ρ M} → Σ∼Ren σ ρ M → ∀ x y → Σ∼Ren (σ ≺+ (x , v y)) (ρ ≺+ (x ∶ y)) M
+Σ∼Ren-upd {σ} {ρ} {M} cond x y z z∈fvM with x ≟ₐ z
 ... | yes eq rewrite x≡y→x[y/M]≡x {x = x} {y = z} {M = v y} {f = σ} eq = refl
 ... | no neq rewrite x≢y→x[y/M]≡x {x = x} {y = z} {M = v y} {f = σ} neq |
                      x≢y→x[y/M]≡x {x = x} {y = z} {M = y} {f = ρ} neq = cond z z∈fvM
 
-id-ren : ∀ M σ ρ → Σ∼Ren σ ρ M → M ∙ᵣ ρ ≡ M ∙ σ
-id-ren (v x) σ ρ eq = eq x (here refl)
-id-ren (M · N) σ ρ eq = PropEq.cong₂ _·_ (id-ren M σ ρ λ x x∈M → eq x (fv-app⁺ˡ {M = M} {N = N} x∈M)) (id-ren N σ ρ λ x x∈N → eq x (fv-app⁺ʳ {M = M} {N = N} x∈N))
-id-ren (ƛ x M) σ ρ eq = PropEq.cong₂ ƛ (sym y=y) (id-ren M (σ ≺+ (x , v y)) (ρ ≺+ (x , y')) p)
+id-ren : ∀ {M} {σ} {ρ} → Σ∼Ren σ ρ M → M ∙ᵣ ρ ≡ M ∙ σ
+id-ren {(v x)} eq = eq x (here refl)
+id-ren {(M · N)} eq = PropEq.cong₂ _·_ (id-ren λ x x∈M → eq x (fv-app⁺ˡ {M = M} {N = N} x∈M)) (id-ren λ x x∈N → eq x (fv-app⁺ʳ {M = M} {N = N} x∈N))
+id-ren {(ƛ x M)} {σ} {ρ} eq = PropEq.cong₂ ƛ (sym y=y) (id-ren  p)
   where y = Chi' (σ , ƛ x M)
         y' = Chiᵣ (ρ , ƛ x M)
         y=y : y ≡ Chiᵣ (ρ , ƛ x M)
@@ -335,10 +326,10 @@ id-ren (ƛ x M) σ ρ eq = PropEq.cong₂ ƛ (sym y=y) (id-ren M (σ ≺+ (x , v
         ... | no neq = eq z (∈-filter⁺ (λ a → ¬? (x ≟ₐ a)) z∈fvM neq)
 
 id-ren' : ∀ M ρ → M ∙ᵣ ρ ≡ M ∙ (v ∘f ρ)
-id-ren' M ρ = id-ren M (v ∘f ρ) ρ (λ _ _ → refl)
+id-ren' M ρ = id-ren (λ _ _ → refl)
 
 id-eq : ∀ M →  M ∙ᵣ ιᵣ ≡ M ∙ ι
-id-eq M = id-ren M ι ιᵣ (ι∼Renιᵣ M)
+id-eq M = id-ren (ι∼Renιᵣ M)
 \end{code}
 
 -- \begin{code}
